@@ -1,0 +1,99 @@
+---
+title: "GenCAT Package"
+author: "Eric Reed, Sara Nuñez, Jing Qian, Andrea Foulkes"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: spacelab
+    toc: yes
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{GenCAT Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Overview
+
+Methods for genetic association, such as genome-wide association studies (GWAS), are wideley used to test for SNP level relationships for traits and disease.  Accounting for multiple-comparisons of such techniques typically calls for conservative Bonferroni adjustements for the number of SNPs included in the analysis (often ~10^6). Commonly referred to as the Minimum P approach, a *class level* signal is often given by the minimum p-value of all SNPs within a class, where class is defined as as a meaningful segment of the genome, such as a protein coding gene. Therefore, only classes with a single strong SNP level signal are deemed significant.  In this package we present tools for implementing an alternative method, known as Genetic Class Association Testing (GenCAT), which utilizing statistical signal from every SNP accross an entire class for each statistical test. Therefore, adjustments for multiple testing need only account for the number of classes used in analysis. This is performed by estimating the distribution of independent test statistics, via an eigen decomposition, using the SNP-level test statistics and genotypic correlation between SNPs. Class level test statistics are then calculated as the sum of the squared values of these independent signals. These test statistics follow a central $chi^2$-distribution, with degree of freedom equal to the number of independent signals within a class.  More information on the GenCAT approach can be found at (Qian et al., 2015).
+
+In this tutorial, we use SNP level results from the [**CARDIoGRAM**](http://www.cardiogramplusc4d.org/downloads/) consortium GWA meta-analysis (Schunkert et al., 2011).  We define classes a protein coding genes, based on boundaries adapted from the KnownCanonical track from [**UCSC Genome Browser**](https://genome.ucsc.edu/), build GRCh 37 (hg 19).
+
+For the sake of time and memory, only select SNPs from chromosomes 13-15 are used. 
+```{r, message=FALSE}
+library(GenCAT)
+```
+
+
+# Data Preparation
+
+The class level approach is carried out by the `GenCAT` function, which requires a six column data frame including information for SNP ID, effect allele (the allele which determines the direction of the test statistic from the SNP level association test), other allele, SNP level test statistic, chromosome number (1-22), and class label.
+
+## Mapping SNPs to classes
+
+This package includes the function, `map2class`, which can be used to assign class labels to SNPs based on their genomic coordinates. The first argument, `coords`, is a data frame which defines the boundaries of each class in the genome. The second argument, `SNPs`, defines the genomic coordinates of each SNP.  A third argument, `extend.boundary`, can also be used to specify class boundary extension. Refer to the help page (`?GenCAT::map2class`) for specific formatting requirements.
+
+In this example we map the CARDIoGRAM SNPs to protein coding genes, extending the class boundaries by 5000.
+
+```{r}
+data('CardioData')
+data('coords')
+
+print(head(coords))
+print(head(CardioData))
+
+CardioMapped<-map2class(coords, CardioData, extend.boundary = 5000)
+
+print(head(CardioMapped))
+```
+
+
+# Class level testing
+
+## Running `GenCAT`
+In order to perform the class level test, genotype data must be provided from a reference population. If available, this can simply be the genotype data used in the initial SNP level analysis. Otherwise, the genotype data should come from a similar representative population.  This data is be specified using the `genoData` and `snpInfo` arguments.  The former must be a `SnpMatrix` object, defined by the **snpStats** package. The latter defines the chromosome number, and allele assignments for each SNP. If using the `read.plink` or `read.pedfile` functions to read in genotype data, these objects can be obtained respectively from the `genotype` and `map` elements of the resulting list object. 
+
+It is recommended that adequate SNP and sample level filtering be carried out on genotype data.  SNP pairs with high missingness (low call rate), can result in missing correlations.  If this happens `GenCAT` will return an error.
+
+For this example, we use SNPwise filtered genotype data from [**1000 Genomes**](http://www.1000genomes.org/data) from 99 individuals of northern and western european ancestry (CEU).
+```{r}
+data('geno')
+
+genoData<-geno$genotypes
+snpInfo<-geno$map
+colnames(snpInfo)<-c('chr', 'SNP', 'gen.dist', 'position', 'A1', 'A2')
+
+GenCATtest <- GenCAT(CardioMapped, genoData=genoData, snpInfo = snpInfo)
+```
+
+## Additional arguments
+The `GenCAT` function is run in parallel using functionality from the **doParallel** package.  This will support parallel processing in both Unix based and Windows machines. The number of processes to run can be specified by the `workers` argument (set to 2 by default).
+
+The `pcCutoff` (set to 0.95 be default) argument specifies the proportion of the variability in the SNP-wise genotype correlation matrices for which to account. Using a value less than 1 will result in a dimension reduction, meaning the number of independent test statistics estimated by the eigendecomposition can be less than the total number of SNPs in a class.  Refer to (Qian et al., 2015) for more information.
+
+## Output
+The `GenCAT` function creates a list object of class `GenCATtest`, which has five elements.
+```{r}
+print(str(GenCATtest))
+```
+The `GenCAT` element contains the results of the class level test, including test statistic(`CsumT`), p-value(`CsumP`), and number of independent signals after the dimension reduction(`N_obs`). The `Used` element contains information for SNPs included in class level testing. The `notFound` and `unMatched` elements contain information for SNPs which were removed because they either couldn't be found in reference population, or the there was one or more allele assignment that wasn't in the reference population's allele assignments for that SNP. The last element, `TransStats` contains the independent test statistic estimates for each class. 
+
+# Visualization
+## Creating Manhattan plots of class level results
+
+The `GenCATtest` object created by the `GenCAT` function can be immediately used with the `GenCAT_manhattan` function. This will plot the $-log_{10}(p-value)$ for each class.  Giving a value to the `sigThresh` argument will draw a horizontal line at $-log_{10}$ of this value. Aditionally, classes with strong signal can be highlighted and labeled by setting arguments, `highlightPosi` and `labelPosi`, to `TRUE`.
+```{r, fig.align='center', fig.width = 10, fig.height=6}
+GenCAT_manhattan(GenCATtest, sigThresh = (0.05/nrow(GenCATtest$GenCAT)), 
+highlightPosi = TRUE, labelPosi = TRUE)
+```
+
+# References
+1. Qian, J., Reed, E., Nuñez, S., Qu, L., Reilly, M., Foulkes, A. (2015) Testing class-level genetic associations using single-element summary statistics. (Under review).
+
+2. Rosenbloom, K. R., Armstrong, J., Barber, G. P., Casper, J., Clawson, H., Diekhans, M., Dreszer, T. R., Fujita, P. A., Guruvadoo, L., Haeussler, M., Harte, R. A., Heitner, S., Hickey, G., Hinrichs, A. S., Hubley, R., Karolchik, D., Learned, K., Lee, B. T., Li, C. H., Miga, K.H. , Nguyen, N., Paten, B., Raney, B.J., Smit, A. F., Speir, M. L., Zweig, A. S., Haussler, D., Kuhn, R. M., Kent, W.J. The UCSC Genome Browser database: 2015 update. Nucleic Acids Res. 2015 Jan;43(Database issue):D670-81. PMID: 25428374; PMC: PMC4383971 
+
+3. Schunkert, H., Konig, I. R., Kathiresan, S., Reilly, M. P. and et. al. (2011). Large-scale association analysis identifies 13 new susceptibility loci for coronary artery disease. Nat. Genet. 43 333–338.
+
+4. The 1000 Genomes Project Consortium. (2012). An integrated map of genetic variation from 1,092 human genomes. Nature, 491(7422), 56–65.
