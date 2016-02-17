@@ -48,7 +48,7 @@ An object of class "GenCATtest" with five elements.
 
 }
 \references{
-Qian, J., Reed, E., Nunez, S., Qu, L., Reilly, M., Foulkes, A. (2015) Testing class-level genetic associations using single-element summary statistics. (Under review).
+Qian, J., Reed, E., Nunez, S., Qu, L., Reilly, M., Foulkes, A. (2016) Testing class-level genetic associations using single-element summary statistics. (Under review).
 }
 \author{
 Eric Reed, Sara Nunez, Jing Qian, Andrea Foulkes 

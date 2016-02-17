@@ -21,7 +21,7 @@
 Maintainer: \packageMaintainer{GenCAT}
 }
 \references{
-Qian, J., Reed, E., Nunez, S., Qu, L., Reilly, M., Foulkes, A. (2015) Testing class-level genetic associations using single-element summary statistics. (Under review).
+Qian, J., Reed, E., Nunez, S., Qu, L., Reilly, M., Foulkes, A. (2016) Testing class-level genetic associations using single-element summary statistics. (Under review).
 
 Rosenbloom, K. R., Armstrong, J., Barber, G. P., Casper, J., Clawson, H., Diekhans, M., Dreszer, T. R., Fujita, P. A., Guruvadoo, L., Haeussler, M., Harte, R. A., Heitner, S., Hickey, G., Hinrichs, A. S., Hubley, R., Karolchik, D., Learned, K., Lee, B. T., Li, C. H., Miga, K.H. , Nguyen, N., Paten, B., Raney, B.J., Smit, A. F., Speir, M. L., Zweig, A. S., Haussler, D., Kuhn, R. M., Kent, W.J. The UCSC Genome Browser database: 2015 update. Nucleic Acids Res. 2015 Jan;43(Database issue):D670-81. PMID: 25428374; PMC: PMC4383971 
 

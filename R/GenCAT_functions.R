@@ -121,7 +121,7 @@ GenCAT_manhattan <- function(GenCATout, sigThresh = NULL, highlightPosi = FALSE,
   
   # If significance threshold is supplied add vertical line at this value
   if(!is.null(sigThresh)) {
-    p <- p + geom_hline(y = -log10(sigThresh), linetype = 1, col = 'black', lwd = 0.75)
+    p <- p + geom_hline(yintercept = -log10(sigThresh), linetype = 1, col = 'black', lwd = 0.75)
     posiSub1 <- filter(manhattanInput, p < sigThresh)
     
     # Highlight significant classes
