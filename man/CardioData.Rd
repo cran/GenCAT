@@ -26,7 +26,7 @@ Data on coronary artery disease / myocardial infarction have been contributed by
 \url{www.CARDIOGRAMPLUSC4D.ORG}.
 }
 \references{
-Schunkert, H., Konig, I. R., Kathiresan, S., Reilly, M. P. and et. al. (2011). Large-scale association analysis identifies 13 new susceptibility loci for coronary artery disease. Nat. Genet. 43 333-338.
+Schunkert, H., Konig, I. R., Kathiresan, S., Reilly, M. P. and et. al. (2011) <DOI:10.1038/ng.784> Large-scale association analysis identifies 13 new susceptibility loci for coronary artery disease. Nat. Genet. 43 333-338.
 }
 \examples{
 data("CardioData")

@@ -37,7 +37,7 @@ This data was filtered for: minor allele frequency < 0.01, call rate  < 0.95, an
 ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/
 }
 \references{
-The 1000 Genomes Project Consortium. (2012). An integrated map of genetic variation from 1,092 human genomes. Nature, 491(7422), 56-65.
+The 1000 Genomes Project Consortium. (2012) <DOI:10.1038/nature11632> An integrated map of genetic variation from 1,092 human genomes. Nature, 491(7422), 56-65.
 }
 \examples{
 data("geno")
